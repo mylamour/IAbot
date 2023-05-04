@@ -16,8 +16,11 @@ for localhost solution, speech to text and text to speech can be instead by:
 # Quickstart
 
 ```bash
-virtualenv --python=python3.10 lenv
-pip install -r requirement
+brew install libespeak1 espeak libspnav swig portaudio sox
+virtualenv --python=python3.10 .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m spacy download zh_core_web_sm en_core_web_sm
 ```
 
 Edit your template file and replace api keys & models
@@ -26,3 +29,5 @@ Edit your template file and replace api keys & models
 cp .env.template .env
 python app.py
 ```
+
+also you need to setting a magic word for converstion, for example. i use `下次再聊吧` to end the Converstion.

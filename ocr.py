@@ -1,11 +1,14 @@
 import io
 import spacy
+import sys
+from markdown import markdown
 import pytesseract
 from PIL import Image
 from cnocr import CnOcr
 from pypdf import PdfReader
-from core import OCR_LANG, OCR_TYPE
-
+from prompts import Prompt
+from core import OCR_LANG, OCR_TYPE, brain
+from PyQt6.QtWidgets import QApplication, QMainWindow, QTextBrowser
 class OCR():
     def __init__(self) -> None:
         if OCR_LANG == "zh-CN":
@@ -18,10 +21,6 @@ class OCR():
         self.nlp = spacy.load(self.spacy_model)
         self.img_file = None
         self.ocr_type = OCR_TYPE
-        #  below code was design for super resolution then ocr 
-        # rdn = RDN(weights='psnr-small')
-        # sr_img = rdn.predict(lr_img)
-        # new_img = Image.fromarray(sr_img)
     
     def ocr_pdf(self, pdf_file, page_number=None, scope=False):
         reader = PdfReader(pdf_file)
@@ -67,3 +66,23 @@ class OCR():
         ocr = CnOcr(rec_model_name)
         out = "".join([i['text'] for i in ocr.ocr(self.img_file)])
         return out
+    
+
+if __name__ == "__main__":
+    rco = OCR()
+    res = "".join(rco.ocr_img('.latest.screenshot.png'))
+    conversation = []
+    conversation.append(Prompt.screenshot.value)
+    conversation.append({
+        "role": "user",
+        "content": res
+    })
+    result = brain(conversation)
+    app = QApplication(sys.argv)
+    window = QMainWindow()
+    text_browser = QTextBrowser(window)
+    window.setCentralWidget(text_browser)
+    window.setGeometry(QApplication.primaryScreen().size().width(), 0, 400, QApplication.primaryScreen().size().height())
+    text_browser.setText(markdown(result))
+    window.show()
+    sys.exit(app.exec())
